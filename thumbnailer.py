@@ -144,8 +144,8 @@ class Application():
 
         font = PIL.ImageFont.truetype(self.font_file, self.text_size*2)
         draw = PIL.ImageDraw.Draw(image)
-        draw.text((self.text_location[0]+2, self.text_location[1]+2), text, self.text_border, font) #This is drop shadow
-        draw.text(self.text_location, text, self.text_fill, font)
+        draw.text((self.text_location[0]*2+2, self.text_location[1]*2+2), text, self.text_border, font) #This is drop shadow
+        draw.text((self.text_location[0]*2,self.text_location[1]*2), text, self.text_fill, font)
         
         out_filename = "{}.jpg".format(int(round(time.time() * 1000)))
         print("Saving to: '{}'".format(out_filename))
