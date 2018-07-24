@@ -22,6 +22,7 @@ class Application():
 
         #Make the GUI
         self.root = Tk()
+        self.root.title("Thumbnail Maker V1.2")
 
         self.window = Frame(self.root)
         self.window.grid(padx=5, pady=5)
