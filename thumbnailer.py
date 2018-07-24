@@ -32,8 +32,8 @@ class Application():
         self.right_side.grid(row=0, column=5, padx=5)
 
         #LEFT SIDE
-        self.but_select_image = Button(self.left_side, text="Select Image", command=self.select_image, width=20)
-        self.but_select_image.grid(row=5, column=0, columnspan=10)
+        self.but_select_image = Button(self.left_side, text="Select Image", command=self.select_image)
+        self.but_select_image.grid(row=5, column=5, columnspan=20, pady=10, sticky="we")
         #Text input
         Label(self.left_side, text="Text:").grid(row=10, column=0)
         self.ent_text = Text(self.left_side, width=30, height=6)
@@ -44,19 +44,20 @@ class Application():
         self.ent_text['yscrollcommand'] = scrollb.set
 
         #Text size slider
-        Label(self.left_side, text="Size:").grid(row=15, column=0)
-        self.sli_size = Scale(self.left_side, orient=HORIZONTAL, from_=10, to=100, resolution=2)
-        self.sli_size.grid(row=15, column=5, columnspan=5)
+        self.lab_size = Label(self.left_side, text="Size: {}".format(self.text_size), width=10)
+        self.lab_size.grid(row=15, column=0)
+        self.sli_size = Scale(self.left_side, orient=HORIZONTAL, from_=10, to=100, resolution=2, showvalue=0)
+        self.sli_size.grid(row=15, column=5, columnspan=5, sticky="we")
         self.sli_size.set(self.text_size)
         #Colour picker buttons
         Label(self.left_side, text="Colour:").grid(row=20, column=0)
-        self.but_fill_colour = Button(self.left_side, text="Text", command=self.set_text_fill)
+        self.but_fill_colour = Button(self.left_side, text="Text", command=self.set_text_fill, width=10)
         self.but_fill_colour.grid(row=20, column=5)
-        self.but_border_colour = Button(self.left_side, text="Dropshadow", command=self.set_text_border)
+        self.but_border_colour = Button(self.left_side, text="Dropshadow", command=self.set_text_border, width=10)
         self.but_border_colour.grid(row=20, column=6)
         #Save image button
         self.but_save_image = Button(self.left_side, text="Save", command= lambda: self.save_image())
-        self.but_save_image.grid(row=25, column=0, columnspan=10, pady=10, ipadx=5, ipady=5)
+        self.but_save_image.grid(row=25, column=5, columnspan=20, pady=10, sticky="we")
 
         #RIGHT SIDE
         photo = PIL.ImageTk.PhotoImage(file="./misc/default_image.jpg")
@@ -68,7 +69,7 @@ class Application():
         #Bindings
         def update_text_size():
             self.text_size = self.sli_size.get()
-            print("size: {}".format(self.text_size))
+            self.lab_size.config(text="Size: {}".format(self.text_size))
             self.update_image_preview()
         
         def update_text_loc(loc):
