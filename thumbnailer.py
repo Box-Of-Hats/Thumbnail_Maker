@@ -36,8 +36,13 @@ class Application():
         self.but_select_image.grid(row=5, column=0, columnspan=10)
         #Text input
         Label(self.left_side, text="Text:").grid(row=10, column=0)
-        self.ent_text = Text(self.left_side, width=20, height=4)
+        self.ent_text = Text(self.left_side, width=30, height=6)
         self.ent_text.grid(row=10, column=5, columnspan=5)
+
+        scrollb = Scrollbar(self.left_side, command=self.ent_text.yview)
+        scrollb.grid(row=10, column=11, sticky='nsew')
+        self.ent_text['yscrollcommand'] = scrollb.set
+
         #Text size slider
         Label(self.left_side, text="Size:").grid(row=15, column=0)
         self.sli_size = Scale(self.left_side, orient=HORIZONTAL, from_=10, to=100, resolution=2)
