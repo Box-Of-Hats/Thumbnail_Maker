@@ -1,7 +1,0 @@
-{
-    "image_argv_index": 1,
-    "output_size": [1280, 720],
-    "output_folder": "/home/yak/Documents/dev_work/python/thumbnailer/output_images/",
-    "input_folder": "/home/yak/Pictures/*.jpg",
-    "font_file": "/home/yak/Downloads/comfortaa/Comfortaa-Bold.ttf"
-}

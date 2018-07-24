@@ -1,0 +1,6 @@
+{
+    "output_size": [1280, 720],
+    "output_folder": "/pictures/thumbnails/",
+    "input_folder": "/pictures/*.jpg",
+    "font_file": "font_folder/comfortaa/Comfortaa-Bold.ttf"
+}
