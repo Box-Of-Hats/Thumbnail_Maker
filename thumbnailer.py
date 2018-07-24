@@ -60,6 +60,7 @@ class Application():
 
         #RIGHT SIDE
         photo = PIL.ImageTk.PhotoImage(file="./misc/default_image.jpg")
+        self.image = PIL.Image.open("./misc/default_image.jpg").convert('RGB')
         self.lab_image_preview = Label(self.right_side, bg="#FFFFFF", image=photo)
         self.lab_image_preview.photo = photo
         self.lab_image_preview.grid(row=5,column=5)
@@ -114,7 +115,7 @@ class Application():
         if not in_filename:
             return None
         #Image was selected:
-        self.image = self.image = PIL.Image.open(in_filename).convert('RGB')
+        self.image = PIL.Image.open(in_filename).convert('RGB')
         self.set_image_preview(self.image)
 
 
