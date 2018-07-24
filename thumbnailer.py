@@ -97,13 +97,9 @@ class Application():
 
     def select_image(self):
         #Attempt to load image from passed in args, else prompt the user with a gui
-        in_filename = None
-        while not in_filename:
-            in_filename = fileopenbox("Choose an image", "Thumbnail Maker", self.input_folder)
-            if not in_filename:
-                if not ynbox("You quit without picking a photo to shrink, do you still want to shrink an image?", "Image Shrinker"):
-                    quit()
-
+        in_filename = fileopenbox("Choose an image", "Thumbnail Maker", self.input_folder)
+        if not in_filename:
+            return None
         #Image was selected:
         self.image = self.image = PIL.Image.open(in_filename).convert('RGB')
         self.set_image_preview(self.image)
@@ -150,8 +146,20 @@ class Application():
 
 def main():
     #Load config file
-    with open("config.txt", "r") as f:
-        config = json.load(f)
+    try:
+        with open("config.txt", "r") as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        print("Error: 'config.txt' file could not be found.")
+        print("Please include this file in the same directory as thumbnailer.py.")
+        print("""E.g:
+        parent/
+                thumbnailer/
+                            thumbnailer.py
+                            config.txt
+        """)
+        input("Press Return to exit...")
+        quit()
 
     Application(config)
 
