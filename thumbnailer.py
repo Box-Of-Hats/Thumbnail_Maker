@@ -21,9 +21,9 @@ class Application():
         self.output_folder = self.config["output_folder"]
 
         #Make the GUI
-        root = Tk()
+        self.root = Tk()
 
-        self.window = Frame(root)
+        self.window = Frame(self.root)
         self.window.grid(padx=5, pady=5)
 
         self.left_side = Frame(self.window)
@@ -73,7 +73,15 @@ class Application():
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
         self.lab_image_preview.bind("<ButtonRelease-1>", lambda loc: update_text_loc(loc))
 
-        root.mainloop()
+        self.root.protocol('WM_DELETE_WINDOW', self.close_program)  # self.root is your self.root window
+
+        self.root.mainloop()
+
+    def close_program(self):
+            # check if saving
+            # if not:
+            self.root.destroy()
+            quit()
 
     def set_text_fill(self):
         c = askcolor(color="red", parent=None, title=("Set text fill"))
