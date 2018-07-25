@@ -9,6 +9,26 @@ from easygui import fileopenbox, ynbox, msgbox
 from tkinter import * 
 from tkinter.colorchooser import *
 
+class TextGraphic():
+    def __init__(self, loc=None, text=None, size=None, font=None, f_colour=None, bg_colour=None):
+        self.location = loc
+        self.text = text
+        self.font = font
+        self.f_colour = f_colour
+        self.bg_colour = bg_colour
+        self.size = size
+    
+    def get_midpoint(self):
+        #Returns the midpoint location of the graphic
+        font = PIL.ImageFont.truetype(self.font, self.size)
+        text_lines = self.text.split("\n")
+        longest_line = max(text_lines, key=lambda x: len(x)).strip()
+        width, height = font.getsize(longest_line)
+        height = height * len(text_lines)
+
+        return (self.location[0]+int(0.5*width), self.location[1]+int(0.5*height))
+
+
 class Application():
     def __init__(self, config):
         self.config = config
@@ -19,6 +39,9 @@ class Application():
         self.font_file = self.config["font_file"]
         self.input_folder = self.config["input_folder"]
         self.output_folder = self.config["output_folder"]
+        self.graphics = []
+        self.selected_graphic = None
+        self.midpoint = (320, 180)
 
         #Make the GUI
         self.root = Tk()
@@ -33,8 +56,12 @@ class Application():
         self.right_side.grid(row=0, column=5, padx=5)
 
         #LEFT SIDE
+        #Select Image
         self.but_select_image = Button(self.left_side, text="Select Image", command=self.select_image)
         self.but_select_image.grid(row=5, column=5, columnspan=20, pady=10, sticky="we")
+        #Add new text
+        self.but_select_image = Button(self.left_side, text="Add Text", command= lambda: self.add_new_text_element(self.midpoint))
+        self.but_select_image.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
         #Text input
         Label(self.left_side, text="Text:").grid(row=10, column=0)
         self.ent_text = Text(self.left_side, width=30, height=6)
@@ -68,34 +95,87 @@ class Application():
         
         #Bindings
         def update_text_size():
-            self.text_size = self.sli_size.get()
+            #Change the size of the selected graphic to that of the slider
+            self.selected_graphic.size = self.sli_size.get()
             self.lab_size.config(text="Size: {}".format(self.text_size))
             self.update_image_preview()
         
-        def update_text_loc(loc):
-            self.text_location = (loc.x, loc.y)
+        def update_text_text():
+            #Change the text of the selected graphic to that of the text entry
+            self.selected_graphic.text = self.ent_text.get(0.0, END)
             self.update_image_preview()
 
-        self.ent_text.bind("<KeyRelease>", lambda ignore: self.update_image_preview())
+        def update_text_loc(mouse_event):
+            #Change the location of the selected graphic to the mouse location
+            font = PIL.ImageFont.truetype(self.font_file, self.selected_graphic.size)
+
+            #Calculate the size and midpoint of the text:
+            text_lines = self.selected_graphic.text.split("\n")
+            longest_line = max(text_lines, key=lambda x: len(x)).strip()
+            width, height = font.getsize(longest_line)
+            height = height * len(text_lines)
+            #Move the graphic's centre to the mouse curser
+            self.selected_graphic.location = (mouse_event.x-int(0.5*width), mouse_event.y-int(0.5*height))
+            self.update_image_preview() #my_max(nested_list, key_func=lambda x: x[1])
+        
+        def create_text_if_empty():
+            if len(self.graphics) == 0:
+                self.add_new_text_element(self.midpoint)
+
+        self.ent_text.bind("<KeyRelease>", lambda ignore: update_text_text())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
-        self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: update_text_loc(loc))
+        self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: self.select_graphic(self.get_closest_graphic(loc)))
+        self.ent_text.bind("<ButtonPress-1>", lambda ignore: create_text_if_empty())
+
         self.lab_image_preview.bind("<B1-Motion>", lambda loc: update_text_loc(loc))
 
         self.root.protocol('WM_DELETE_WINDOW', self.close_program)  # self.root is your self.root window
 
         self.root.mainloop()
 
+    def select_graphic(self, graphic):
+        if not graphic:
+            graphic = self.add_new_text_element(self.midpoint)
+        self.selected_graphic = graphic
+        self.ent_text.delete(0.0, END)
+        self.ent_text.insert(END, self.selected_graphic.text)
+
+    def get_closest_graphic(self, mouse_event):
+        #Return the graphic which is the closest to the mouse event
+        if len(self.graphics) == 0:
+            return False
+        else:
+            distances = {g:None for g in self.graphics}
+            for graphic in self.graphics:
+                #distance = abs(mouse_event.x - graphic.location[0]) + abs(mouse_event.y - graphic.location[1])
+                graphic_midpoint = graphic.get_midpoint()
+                distance = abs(mouse_event.x - graphic_midpoint[0]) + abs(mouse_event.y - graphic_midpoint[1])
+                distances[graphic] = distance
+
+            min_dist = min([distances[g] for g in distances])
+            for graphic in distances:
+                if distances[graphic] == min_dist:
+                    return graphic
+            else:
+                return False
+
+    def add_new_text_element(self, location=(0,0)):
+        new_text_element = TextGraphic(loc=location, text="Text {}".format(len(self.graphics)), size=20, font=self.font_file, f_colour=(255,255,255), bg_colour=(0,0,0))
+        self.graphics.append(new_text_element)
+        self.select_graphic(self.graphics[-1])
+        self.update_image_preview()
+        return new_text_element
+
+
     def close_program(self):
-            # check if saving
-            # if not:
-            self.root.destroy()
-            quit()
+        self.root.destroy()
+        quit()
 
     def set_text_fill(self):
         c = askcolor(color="red", parent=None, title=("Set text fill"))
         rgb_colour = tuple([int(i) for i in c[0]])
         if c:
-            self.text_fill = rgb_colour
+            self.selected_graphic.f_colour = rgb_colour
             self.but_fill_colour.config(fg=c[1])
             self.update_image_preview()
         else:
@@ -105,7 +185,7 @@ class Application():
         c = askcolor(color="red", parent=None, title=("Set text border"))
         rgb_colour = tuple([int(i) for i in c[0]])
         if c:
-            self.text_border = rgb_colour
+            self.selected_graphic.bg_colour = rgb_colour
             self.but_border_colour.config(fg=c[1])
             self.update_image_preview()
         else:
@@ -118,24 +198,13 @@ class Application():
             return None
         #Image was selected:
         self.image = PIL.Image.open(in_filename).convert('RGB')
-        self.set_image_preview(self.image)
-
+        self.update_image_preview()
 
     def update_image_preview(self):
-        """Update the preview image so it's in-sync with the current options"""
-        self.set_image_preview(self.image)
-
-    def set_image_preview(self, image):
         #Takes a standard PIL.Image and displays it in the image preview
-        image = image.resize((640,360), PIL.Image.ANTIALIAS)
-        #Add text
-        text = str(self.ent_text.get(0.0, END))
+        image = self.render_image(size=(640, 360))
 
-        font = PIL.ImageFont.truetype(self.font_file, self.text_size)
-        draw = PIL.ImageDraw.Draw(image)
-        draw.text((self.text_location[0]+2, self.text_location[1]+2), text, self.text_border, font) #This is drop shadow
-        draw.text(self.text_location, text, self.text_fill, font)
-        #Add to the label
+        #Add image to the label
         image = PIL.ImageTk.PhotoImage(image)
         self.lab_image_preview.photo = image
         self.lab_image_preview.configure(image=image)
@@ -146,19 +215,26 @@ class Application():
         """
         Export the current image in 1280x720
         """
-        image = self.image.resize((1280,720), PIL.Image.ANTIALIAS)
-        #Add text
-        text = str(self.ent_text.get(0.0, END))
+        image = self.render_image((1280, 720))
 
-        font = PIL.ImageFont.truetype(self.font_file, self.text_size*2)
-        draw = PIL.ImageDraw.Draw(image)
-        draw.text((self.text_location[0]*2+2, self.text_location[1]*2+2), text, self.text_border, font) #This is drop shadow
-        draw.text((self.text_location[0]*2,self.text_location[1]*2), text, self.text_fill, font)
-        
         out_filename = "{}.jpg".format(int(round(time.time() * 1000)))
         print("Saving to: '{}'".format(out_filename))
         image.save("{}/{}".format(self.output_folder, out_filename))
         msgbox("Your photo has been made into a thumbnail! You can find it at {}".format(self.output_folder))
+
+    def render_image(self, size=(1280, 720)):
+        #returns an Image object that has been rendered with the current settings
+        image = self.image.resize(size, PIL.Image.ANTIALIAS)
+        #Loop through graphics and draw them to the image
+        #Janky multiplication/division on location to ensure that the text
+        #is in the correct location for both 1280x720 and 640x360 images.
+        #Other resolutions may not work!
+        draw = PIL.ImageDraw.Draw(image)
+        for graphic in self.graphics:
+            font = PIL.ImageFont.truetype(self.font_file, int(graphic.size/360*size[1]))
+            draw.text((graphic.location[0]*size[0]/640+2, graphic.location[1]/360*size[1]+2), graphic.text, graphic.bg_colour, font) #This is drop shadow
+            draw.text((graphic.location[0]*size[0]/640, graphic.location[1]*size[1]/360), graphic.text, graphic.f_colour, font)
+        return image
 
 def main():
     #Load config file
