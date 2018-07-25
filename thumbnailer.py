@@ -22,7 +22,7 @@ class Application():
 
         #Make the GUI
         self.root = Tk()
-        self.root.title("Thumbnail Maker V1.2")
+        self.root.title("Thumbnail Maker V1.3")
 
         self.window = Frame(self.root)
         self.window.grid(padx=5, pady=5)
@@ -75,14 +75,6 @@ class Application():
         def update_text_loc(loc):
             self.text_location = (loc.x, loc.y)
             self.update_image_preview()
-
-        #def drag_text_begin():
-        #    self.mouse_down = True
-        #    while self.mouse_down:
-        #        pass
-        
-        #def drag_text_end():
-        #    self.mouse_down = False
 
         self.ent_text.bind("<KeyRelease>", lambda ignore: self.update_image_preview())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
