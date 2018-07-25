@@ -39,10 +39,9 @@ class Application():
         Label(self.left_side, text="Text:").grid(row=10, column=0)
         self.ent_text = Text(self.left_side, width=30, height=6)
         self.ent_text.grid(row=10, column=5, columnspan=5)
-
-        scrollb = Scrollbar(self.left_side, command=self.ent_text.yview)
-        scrollb.grid(row=10, column=11, sticky='nsew')
-        self.ent_text['yscrollcommand'] = scrollb.set
+        scrollbar = Scrollbar(self.left_side, command=self.ent_text.yview)
+        scrollbar.grid(row=10, column=11, sticky='nsew')
+        self.ent_text['yscrollcommand'] = scrollbar.set
 
         #Text size slider
         self.lab_size = Label(self.left_side, text="Size: {}".format(self.text_size), width=10)
@@ -77,9 +76,18 @@ class Application():
             self.text_location = (loc.x, loc.y)
             self.update_image_preview()
 
+        #def drag_text_begin():
+        #    self.mouse_down = True
+        #    while self.mouse_down:
+        #        pass
+        
+        #def drag_text_end():
+        #    self.mouse_down = False
+
         self.ent_text.bind("<KeyRelease>", lambda ignore: self.update_image_preview())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
-        self.lab_image_preview.bind("<ButtonRelease-1>", lambda loc: update_text_loc(loc))
+        self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: update_text_loc(loc))
+        self.lab_image_preview.bind("<B1-Motion>", lambda loc: update_text_loc(loc))
 
         self.root.protocol('WM_DELETE_WINDOW', self.close_program)  # self.root is your self.root window
 
