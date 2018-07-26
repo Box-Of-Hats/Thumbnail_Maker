@@ -113,7 +113,7 @@ class Application():
         #Text size slider
         self.lab_size = Label(self.left_side, text="Size: {}".format(self.text_size), width=10)
         self.lab_size.grid(row=15, column=0)
-        self.sli_size = Scale(self.left_side, orient=HORIZONTAL, from_=10, to=100, resolution=2, showvalue=0)
+        self.sli_size = Scale(self.left_side, orient=HORIZONTAL, from_=10, to=160, resolution=2, showvalue=0)
         self.sli_size.grid(row=15, column=5, columnspan=5, sticky="we")
         self.sli_size.set(self.text_size)
         #Colour picker buttons
