@@ -31,7 +31,6 @@ class TextGraphic():
         left = self.midpoint[0] - self.width/2 - tolerance
         top = self.midpoint[1] - self.height/2 - tolerance
         bottom = self.midpoint[1] + self.height/2 + tolerance
-        print(left, right, top, bottom)
 
         return (left <= location[0]  and location[0] <= right and top <= location[1] and location[1] <= bottom)
 
@@ -98,31 +97,10 @@ class Application():
         self.but_select_image = Button(self.left_side, text="Add Text", command= lambda: self.add_new_text_element(self.midpoint))
         self.but_select_image.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
         #Change font
-        #fonts=list(tkinter.font.families())
-        #fonts.sort()
-
-        font_var = StringVar(self.root)
-        font_var.set(self.font_file)
-        display = OptionMenu(self.left_side, font_var, *self.font_list)
-        display.grid(row=9, column=5, columnspan=10, sticky="we")
-        # on change dropdown value
-        def change_dropdown(*args):
-            print( font_var.get() )
-            font_path = "{}{}".format(self.font_folder, font_var.get())
-            if not self.selected_graphic:
-                self.add_new_text_element(self.midpoint)
-            self.selected_graphic.font = font_path
-            self.update_image_preview()
-        
-        # link function to change dropdown
-        font_var.trace('w', change_dropdown)
-        #scroll = Scrollbar(self.left_side)
-        #scroll.grid(row=9, column=11, sticky="nsew")
-        #scroll.configure(command=display.yview)
-        #display.configure(yscrollcommand=scroll.set)
-
-        #for item in fonts:
-        #    display.insert(END, item)
+        self.font_var = StringVar(self.root)
+        self.font_var.set(self.font_file.split("/")[-1])
+        self.opt_font_selection = OptionMenu(self.left_side, self.font_var, *self.font_list)
+        self.opt_font_selection.grid(row=9, column=5, columnspan=10, sticky="we")
 
         #Text input
         Label(self.left_side, text="Text:").grid(row=10, column=0)
@@ -184,14 +162,22 @@ class Application():
             if len(self.graphics) == 0:
                 self.add_new_text_element(self.midpoint)
 
+        def font_option_changed(*args):
+            #When the font option is changed:
+            font_path = "{}{}".format(self.font_folder, self.font_var.get())
+            if not self.selected_graphic:
+                self.add_new_text_element(self.midpoint)
+            self.selected_graphic.font = font_path
+            self.update_image_preview()
+
         self.ent_text.bind("<KeyRelease>", lambda ignore: update_text_text())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
         self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: self.select_graphic(self.get_closest_graphic(loc, tolerance=50)))
         self.ent_text.bind("<ButtonPress-1>", lambda ignore: create_text_if_empty())
-
         self.lab_image_preview.bind("<B1-Motion>", lambda loc: update_text_loc(loc))
+        self.font_var.trace('w', font_option_changed)
 
-        self.root.protocol('WM_DELETE_WINDOW', self.close_program)  # self.root is your self.root window
+        self.root.protocol('WM_DELETE_WINDOW', self.close_program)
 
         self.root.mainloop()
 
@@ -205,6 +191,7 @@ class Application():
         self.lab_size.config(text="Size: {}".format(self.selected_graphic.size))
         self.but_border_colour.config(fg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
         self.but_fill_colour.config(fg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
+        self.font_var.set(self.selected_graphic.font.split("/")[-1])
 
     def get_closest_graphic(self, mouse_event, tolerance=0):
         #Return the graphic which is the closest to the mouse event
@@ -213,8 +200,6 @@ class Application():
             return False
         else:
             distances = {g:None for g in self.graphics}
-            for g in self.graphics:
-                print("{}: {} : click@{},{}".format(g.text, g.in_bounding_box(click_loc, tolerance=tolerance), click_loc[0], click_loc[1]))
             for graphic in self.graphics:
                 graphic_midpoint = graphic.midpoint
                 distance = abs(click_loc[0] - graphic_midpoint[0]) + abs(click_loc[1] - graphic_midpoint[1])
@@ -293,10 +278,12 @@ class Application():
     def render_image(self, size=(1280, 720)):
         #returns an Image object that has been rendered with the current settings
         image = self.image.resize(size, PIL.Image.ANTIALIAS)
-        #Loop through graphics and draw them to the image
-        #Janky multiplication/division on location to ensure that the text
-        #is in the correct location for both 1280x720 and 640x360 images.
-        #Other resolutions may not work!
+        """
+        Loop through graphics and draw them to the image
+        Janky multiplication/division on location to ensure that the text
+        is in the correct location for both 1280x720 and 640x360 images.
+        Other resolutions may not work!
+        """
         draw = PIL.ImageDraw.Draw(image)
         for graphic in self.graphics:
             font = PIL.ImageFont.truetype(graphic.font, int(graphic.size/360*size[1]))
