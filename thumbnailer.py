@@ -75,7 +75,7 @@ class Application():
         self.midpoint = (320, 180)
 
         #Load the font list
-        self.font_list = [i.replace(".ttf","") for i in os.listdir(self.font_folder) if i.endswith(".ttf")]
+        self.font_list = [i for i in os.listdir(self.font_folder) if i.endswith(".ttf")]
 
         #Make the GUI
         self.root = Tk()
@@ -98,7 +98,7 @@ class Application():
         self.but_select_image.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
         #Change font
         self.font_var = StringVar(self.root)
-        self.font_var.set(self.font_file.split("/")[-1].replace(".ttf", ""))
+        self.font_var.set(self.font_file.split("/")[-1])
         self.opt_font_selection = OptionMenu(self.left_side, self.font_var, *self.font_list)
         self.opt_font_selection.grid(row=9, column=5, columnspan=10, sticky="we")
 
@@ -191,7 +191,7 @@ class Application():
         self.lab_size.config(text="Size: {}".format(self.selected_graphic.size))
         self.but_border_colour.config(fg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
         self.but_fill_colour.config(fg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
-        self.font_var.set(self.selected_graphic.font.split("/")[-1].replace(".ttf", ""))
+        self.font_var.set(self.selected_graphic.font.split("/")[-1])
 
     def get_closest_graphic(self, mouse_event, tolerance=0):
         #Return the graphic which is the closest to the mouse event
