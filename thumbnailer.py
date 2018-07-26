@@ -142,7 +142,7 @@ class Application():
         
         def update_text_text():
             #Change the text of the selected graphic to that of the text entry
-            self.selected_graphic.text = self.ent_text.get(0.0, END)
+            self.selected_graphic.text = self.ent_text.get(0.0, END).strip()
             self.update_image_preview()
 
         def update_text_loc(mouse_event):
