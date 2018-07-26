@@ -76,7 +76,7 @@ class Application():
         self.midpoint = (320, 180)
 
         #Load the font list
-        self.font_list = [i for i in os.listdir(self.font_folder)]
+        self.font_list = [i for i in os.listdir(self.font_folder) if i.endswith(".ttf")]
 
         #Make the GUI
         self.root = Tk()
