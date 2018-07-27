@@ -13,7 +13,7 @@ import tkinter.font
 
 """
 TODO:
-    -Add a font chooser
+    - 
 """
 
 class TextGraphic():
@@ -73,7 +73,13 @@ class Application():
         self.graphics = []
         self.selected_graphic = None
         self.midpoint = (320, 180)
-
+        self.rotation_count = 0
+        try:
+            self.save_size = config["output_size"]
+            self.display_size = config["display_size"]
+        except KeyError:
+            self.save_size = (1280, 720)
+            self.display_size = (640, 360)
         #Load the font list
         self.font_list = [i for i in os.listdir(self.font_folder) if i.endswith(".ttf")]
 
@@ -93,6 +99,8 @@ class Application():
         #Select Image
         self.but_select_image = Button(self.left_side, text="Select Image", command=self.select_image)
         self.but_select_image.grid(row=5, column=5, columnspan=20, pady=10, sticky="we")
+        #Rotate button
+        Button(self.left_side, text="R", command=self.increase_rotation).grid(column=26, row=5)
         #Add new text
         self.but_select_image = Button(self.left_side, text="Add Text", command= lambda: self.add_new_text_element(self.midpoint))
         self.but_select_image.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
@@ -169,17 +177,24 @@ class Application():
                 self.add_new_text_element(self.midpoint)
             self.selected_graphic.font = font_path
             self.update_image_preview()
+        
+        
 
         self.ent_text.bind("<KeyRelease>", lambda ignore: update_text_text())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
-        self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: self.select_graphic(self.get_closest_graphic(loc, tolerance=50)))
-        self.ent_text.bind("<ButtonPress-1>", lambda ignore: create_text_if_empty())
         self.lab_image_preview.bind("<B1-Motion>", lambda loc: update_text_loc(loc))
+        self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: self.select_graphic(self.get_closest_graphic(loc, tolerance=50)))
+        #self.lab_image_preview.bind("<ButtonPress-3>", lambda loc: increase_rotation() )
+        self.ent_text.bind("<ButtonPress-1>", lambda ignore: create_text_if_empty())
         self.font_var.trace('w', font_option_changed)
 
         self.root.protocol('WM_DELETE_WINDOW', self.close_program)
 
         self.root.mainloop()
+
+    def increase_rotation(self):
+        self.rotation_count = (self.rotation_count + 1) % 4
+        self.update_image_preview()
 
     def select_graphic(self, graphic):
         if not graphic:
@@ -229,7 +244,7 @@ class Application():
         if c:
             rgb_colour = tuple([int(i) for i in c[0]])
             self.selected_graphic.f_colour = rgb_colour
-            self.but_fill_colour.config(fg=c[1])
+            self.but_fill_colour.config(highlightbackgroundcolor=c[1])
             self.update_image_preview()
         else:
             pass
@@ -255,7 +270,7 @@ class Application():
 
     def update_image_preview(self):
         #Takes a standard PIL.Image and displays it in the image preview
-        image = self.render_image(size=(640, 360))
+        image = self.render_image(size=self.display_size)
 
         #Add image to the label
         image = PIL.ImageTk.PhotoImage(image)
@@ -268,16 +283,16 @@ class Application():
         """
         Export the current image in 1280x720
         """
-        image = self.render_image((1280, 720))
+        image = self.render_image(self.save_size)
 
         out_filename = "{}.jpg".format(int(round(time.time() * 1000)))
         print("Saving to: '{}'".format(out_filename))
         image.save("{}/{}".format(self.output_folder, out_filename))
         msgbox("Your photo has been made into a thumbnail! You can find it at {}".format(self.output_folder))
 
-    def render_image(self, size=(1280, 720)):
+    def render_image(self, size):
         #returns an Image object that has been rendered with the current settings
-        image = self.image.resize(size, PIL.Image.ANTIALIAS)
+        image = self.image.resize(size, PIL.Image.ANTIALIAS).rotate(self.rotation_count*90)
         """
         Loop through graphics and draw them to the image
         Janky multiplication/division on location to ensure that the text
@@ -287,8 +302,8 @@ class Application():
         draw = PIL.ImageDraw.Draw(image)
         for graphic in self.graphics:
             font = PIL.ImageFont.truetype(graphic.font, int(graphic.size/360*size[1]))
-            draw.text((graphic.location[0]*size[0]/640+2, graphic.location[1]/360*size[1]+2), graphic.text, graphic.bg_colour, font) #This is drop shadow
-            draw.text((graphic.location[0]*size[0]/640, graphic.location[1]*size[1]/360), graphic.text, graphic.f_colour, font)
+            draw.text((graphic.location[0]*size[0]/self.display_size[0]+2, graphic.location[1]/self.display_size[1]*size[1]+2), graphic.text, graphic.bg_colour, font) #This is drop shadow
+            draw.text((graphic.location[0]*size[0]/self.display_size[0], graphic.location[1]*size[1]/self.display_size[1]), graphic.text, graphic.f_colour, font)
         return image
 
 def main():
