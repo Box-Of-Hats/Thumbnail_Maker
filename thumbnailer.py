@@ -191,7 +191,7 @@ class Application():
             self.font_file = font_path
             self.selected_graphic.font = font_path
             self.update_image_preview()
-            
+
         #Bindings
         self.ent_text.bind("<KeyRelease>", lambda ignore: update_text_text())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
@@ -220,6 +220,9 @@ class Application():
         self.lab_bg_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
         self.lab_fill_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
         self.font_var.set(self.selected_graphic.font.split("/")[-1])
+        #Delete any graphics that contain no text:
+        self.graphics = [g for g in self.graphics if g.text.strip()]
+
 
     def get_closest_graphic(self, mouse_event, tolerance=0):
         #Return the graphic which is the closest to the mouse event
