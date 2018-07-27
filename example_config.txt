@@ -1,6 +1,11 @@
 {
     "output_size": [1280, 720],
-    "output_folder": "/pictures/thumbnails/",
-    "input_folder": "/pictures/*.jpg",
-    "font_file": "font_folder/comfortaa/Comfortaa-Bold.ttf"
+    "display_size": [640, 360],
+    "text_fill": [255,255,255],
+    "text_border": [1,1,1],
+    "text_size": 20,
+    "output_folder": "/home/username/pictures/thumbnails/",
+    "input_folder": "/home/username/pictures/*.jpg",
+    "font_file": "/usr/share/fonts/Ubuntu-B.ttf",
+    "font_folder": "/usr/share/fonts/
 }
