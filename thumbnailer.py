@@ -62,9 +62,6 @@ class TextGraphic():
 class Application():
     def __init__(self, config):
         self.config = config
-        self.text_border = (255,255,255)
-        self.text_fill = (1, 1, 1)
-        self.text_size = 20
         self.text_location = (0,0)
         self.font_file = self.config["font_file"]
         self.input_folder = self.config["input_folder"]
@@ -72,7 +69,7 @@ class Application():
         self.font_folder = self.config["font_folder"]
         self.graphics = []
         self.selected_graphic = None
-        self.midpoint = (320, 180)
+        
         self.rotation_count = 0
         try:
             self.save_size = config["output_size"]
@@ -80,6 +77,18 @@ class Application():
         except KeyError:
             self.save_size = (1280, 720)
             self.display_size = (640, 360)
+        self.midpoint = [i/2 for i in self.display_size]
+        try:
+            self.text_border = tuple(config["text_border"])
+            self.text_fill = tuple(config["text_fill"])
+        except KeyError:
+            self.text_border = (255,255,255)
+            self.text_fill = (1, 1, 1)
+        try:
+            self.text_size = config["text_size"]
+        except KeyError:
+            self.text_size = 20
+
         #Load the font list
         self.font_list = [i for i in os.listdir(self.font_folder) if i.endswith(".ttf")]
 
@@ -128,8 +137,12 @@ class Application():
         Label(self.left_side, text="Colour:").grid(row=20, column=0)
         self.but_fill_colour = Button(self.left_side, text="Text", command=self.set_text_fill, width=10)
         self.but_fill_colour.grid(row=20, column=5)
+        self.lab_fill_indicator = Label(self.left_side, bg="#FFFFFF", width=3)
+        self.lab_fill_indicator.grid(row=20, column=6, sticky="ns")
         self.but_border_colour = Button(self.left_side, text="Dropshadow", command=self.set_text_border, width=10)
-        self.but_border_colour.grid(row=20, column=6)
+        self.but_border_colour.grid(row=20, column=8)
+        self.lab_bg_indicator = Label(self.left_side, bg="#000000", width=3)
+        self.lab_bg_indicator.grid(row=20, column=9, sticky="ns")
         #Save image button
         self.but_save_image = Button(self.left_side, text="Save", command= lambda: self.save_image())
         self.but_save_image.grid(row=25, column=5, columnspan=20, pady=10, sticky="we")
@@ -141,7 +154,7 @@ class Application():
         self.lab_image_preview.photo = photo
         self.lab_image_preview.grid(row=5,column=5)
         
-        #Bindings
+        #Binding functions
         def update_text_size():
             #Change the size of the selected graphic to that of the slider
             self.selected_graphic.size = self.sli_size.get()
@@ -175,19 +188,19 @@ class Application():
             font_path = "{}{}".format(self.font_folder, self.font_var.get())
             if not self.selected_graphic:
                 self.add_new_text_element(self.midpoint)
+            self.font_file = font_path
             self.selected_graphic.font = font_path
             self.update_image_preview()
-        
-        
-
+            
+        #Bindings
         self.ent_text.bind("<KeyRelease>", lambda ignore: update_text_text())
         self.sli_size.bind("<ButtonRelease-1>", lambda ignore: update_text_size())
         self.lab_image_preview.bind("<B1-Motion>", lambda loc: update_text_loc(loc))
         self.lab_image_preview.bind("<ButtonPress-1>", lambda loc: self.select_graphic(self.get_closest_graphic(loc, tolerance=50)))
-        #self.lab_image_preview.bind("<ButtonPress-3>", lambda loc: increase_rotation() )
         self.ent_text.bind("<ButtonPress-1>", lambda ignore: create_text_if_empty())
         self.font_var.trace('w', font_option_changed)
-
+        self.lab_bg_indicator.bind("<ButtonPress-1>", lambda ignore: self.set_text_border())
+        self.lab_fill_indicator.bind("<ButtonPress-1>", lambda ignore: self.set_text_fill())
         self.root.protocol('WM_DELETE_WINDOW', self.close_program)
 
         self.root.mainloop()
@@ -204,8 +217,8 @@ class Application():
         self.ent_text.insert(END, self.selected_graphic.text)
         self.sli_size.set(self.selected_graphic.size)
         self.lab_size.config(text="Size: {}".format(self.selected_graphic.size))
-        self.but_border_colour.config(fg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
-        self.but_fill_colour.config(fg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
+        self.lab_bg_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
+        self.lab_fill_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
         self.font_var.set(self.selected_graphic.font.split("/")[-1])
 
     def get_closest_graphic(self, mouse_event, tolerance=0):
@@ -228,7 +241,7 @@ class Application():
                 return False
 
     def add_new_text_element(self, location=(0,0)):
-        new_text_element = TextGraphic(loc=location, text="Text {}".format(len(self.graphics)), size=20, font=self.font_file, f_colour=(255,255,255), bg_colour=(0,0,0))
+        new_text_element = TextGraphic(loc=location, text="Text {}".format(len(self.graphics)), size=self.text_size, font=self.font_file, f_colour=self.text_fill, bg_colour=self.text_border)
         self.graphics.append(new_text_element)
         self.select_graphic(self.graphics[-1])
         self.update_image_preview()
@@ -243,8 +256,9 @@ class Application():
         c = askcolor(color="red", parent=None, title=("Set text fill"))
         if c:
             rgb_colour = tuple([int(i) for i in c[0]])
-            self.selected_graphic.f_colour = rgb_colour
-            self.but_fill_colour.config(highlightbackgroundcolor=c[1])
+            if self.selected_graphic: self.selected_graphic.f_colour = rgb_colour
+            self.text_fill = rgb_colour
+            self.lab_fill_indicator.config(bg=c[1])
             self.update_image_preview()
         else:
             pass
@@ -253,8 +267,9 @@ class Application():
         c = askcolor(color="red", parent=None, title=("Set text border"))
         if c:
             rgb_colour = tuple([int(i) for i in c[0]])
-            self.selected_graphic.bg_colour = rgb_colour
-            self.but_border_colour.config(fg=c[1])
+            if self.selected_graphic: self.selected_graphic.bg_colour = rgb_colour
+            self.text_border = rgb_colour
+            self.lab_bg_indicator.config(bg=c[1])
             self.update_image_preview()
         else:
             pass
@@ -292,7 +307,7 @@ class Application():
 
     def render_image(self, size):
         #returns an Image object that has been rendered with the current settings
-        image = self.image.resize(size, PIL.Image.ANTIALIAS).rotate(self.rotation_count*90)
+        image = self.image.rotate(-self.rotation_count*90).resize(size, PIL.Image.ANTIALIAS)
         """
         Loop through graphics and draw them to the image
         Janky multiplication/division on location to ensure that the text
