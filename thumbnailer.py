@@ -90,7 +90,7 @@ class Application():
 
         #Make the GUI
         self.root = Tk()
-        self.root.title("Thumbnail Maker V1.6")
+        self.root.title("Thumbnail Maker V1.7")
 
         self.window = Frame(self.root)
         self.window.grid(padx=8, pady=8)
@@ -120,7 +120,9 @@ class Application():
         self.font_var = StringVar(self.root)
         self.font_var.set(self.font_file.split("/")[-1])
         self.opt_font_selection = OptionMenu(self.left_side, self.font_var, *self.font_list)
-        self.opt_font_selection.grid(row=9, column=5, columnspan=10, sticky="we")
+        self.opt_font_selection.config(highlightthickness=0)
+        self.opt_font_selection.config(bd=1)
+        self.opt_font_selection.grid(row=9, column=5, columnspan=10, sticky="wesn")
 
         #Text input
         #Label(self.left_side, text="Text:").grid(row=10, column=0)
