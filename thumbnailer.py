@@ -106,13 +106,20 @@ class Application():
 
         #LEFT SIDE
         #Select Image
-        self.but_select_image = Button(self.left_side, text="Select Image", command=self.select_image)
+        select_image_icon = PhotoImage(file="misc/picture.png")
+        self.but_select_image = Button(self.left_side, text="Select Image", image=select_image_icon, compound="left", command=self.select_image)
         self.but_select_image.grid(row=5, column=5, columnspan=20, pady=10, sticky="we")
+        self.but_select_image.icon = select_image_icon
+
         #Rotate button
-        Button(self.left_side, text="R", command=self.increase_rotation).grid(column=26, row=5)
+        Button(self.left_side, text="⭮", command=self.increase_rotation).grid(column=26, row=5, sticky="we")
+
         #Add new text
-        self.but_select_image = Button(self.left_side, text="Add Text", command= lambda: self.add_new_text_element(self.midpoint))
-        self.but_select_image.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
+        add_text_icon = PhotoImage(file="misc/edit.png")
+        self.but_add_text = Button(self.left_side, text="Add Text", image=add_text_icon, compound="left", command= lambda: self.add_new_text_element(self.midpoint))
+        self.but_add_text.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
+        self.but_add_text.icon = add_text_icon
+
         #Change font
         self.font_var = StringVar(self.root)
         self.font_var.set(self.font_file.split("/")[-1])
@@ -120,7 +127,7 @@ class Application():
         self.opt_font_selection.grid(row=9, column=5, columnspan=10, sticky="we")
 
         #Text input
-        Label(self.left_side, text="Text:").grid(row=10, column=0)
+        #Label(self.left_side, text="Text:").grid(row=10, column=0)
         self.ent_text = Text(self.left_side, width=30, height=6)
         self.ent_text.grid(row=10, column=5, columnspan=5)
         scrollbar = Scrollbar(self.left_side, command=self.ent_text.yview)
@@ -128,24 +135,32 @@ class Application():
         self.ent_text['yscrollcommand'] = scrollbar.set
 
         #Text size slider
-        self.lab_size = Label(self.left_side, text="Size: {}".format(self.text_size), width=10)
-        self.lab_size.grid(row=15, column=0)
-        self.sli_size = Scale(self.left_side, orient=HORIZONTAL, from_=10, to=160, resolution=2, showvalue=0)
+        #self.lab_size = Label(self.left_side, text="{}".format(self.text_size), width=3)
+        #self.lab_size.grid(row=15, column=11, columnspan=5, sticky="w")
+        self.sli_size = Scale(self.left_side, label="↕ Size: {}".format(self.text_size), orient=HORIZONTAL, from_=10, to=160, resolution=2, showvalue=0)
         self.sli_size.grid(row=15, column=5, columnspan=5, sticky="we")
         self.sli_size.set(self.text_size)
+
         #Colour picker buttons
-        Label(self.left_side, text="Colour:").grid(row=20, column=0)
-        self.but_fill_colour = Button(self.left_side, text="Text", command=self.set_text_fill, width=10)
-        self.but_fill_colour.grid(row=20, column=5)
+        text_fill_icon = PhotoImage(file="misc/text.png")
+        text_bg_icon = PhotoImage(file="misc/text_bg.png")
+        #Label(self.left_side, text="Colour:").grid(row=20, column=0)
+        self.but_fill_colour = Button(self.left_side, image=text_fill_icon, command=self.set_text_fill, width=24, height=24)
+        self.but_fill_colour.grid(row=20, column=5, sticky="e")
+        self.but_fill_colour.icon = text_fill_icon
         self.lab_fill_indicator = Label(self.left_side, bg="#FFFFFF", width=3)
-        self.lab_fill_indicator.grid(row=20, column=6, sticky="ns")
-        self.but_border_colour = Button(self.left_side, text="Dropshadow", command=self.set_text_border, width=10)
-        self.but_border_colour.grid(row=20, column=8)
+        self.lab_fill_indicator.grid(row=20, column=6, sticky="nsw")
+        self.but_border_colour = Button(self.left_side, image=text_bg_icon, command=self.set_text_border, width=24, height=24)
+        self.but_border_colour.grid(row=20, column=8, sticky="e")
+        self.but_border_colour.icon = text_bg_icon
         self.lab_bg_indicator = Label(self.left_side, bg="#000000", width=3)
-        self.lab_bg_indicator.grid(row=20, column=9, sticky="ns")
+        self.lab_bg_indicator.grid(row=20, column=9, sticky="nsw")
+
         #Save image button
-        self.but_save_image = Button(self.left_side, text="Save", command= lambda: self.save_image())
+        save_icon = PhotoImage(file="misc/save.png")
+        self.but_save_image = Button(self.left_side, text="Save", image=save_icon, compound="left", command= lambda: self.save_image())
         self.but_save_image.grid(row=25, column=5, columnspan=20, pady=10, sticky="we")
+        self.but_save_image = save_icon
 
         #RIGHT SIDE
         photo = PIL.ImageTk.PhotoImage(file="./misc/default_image.jpg")
@@ -157,8 +172,10 @@ class Application():
         #Binding functions
         def update_text_size():
             #Change the size of the selected graphic to that of the slider
+            if not self.selected_graphic:
+                self.add_new_text_element(self.midpoint)
             self.selected_graphic.size = self.sli_size.get()
-            self.lab_size.config(text="Size: {}".format(self.selected_graphic.size))
+            self.sli_size.config(label="↕ Size: {}".format(self.selected_graphic.size))
             self.update_image_preview()
         
         def update_text_text():
@@ -216,7 +233,7 @@ class Application():
         self.ent_text.delete(0.0, END)
         self.ent_text.insert(END, self.selected_graphic.text)
         self.sli_size.set(self.selected_graphic.size)
-        self.lab_size.config(text="Size: {}".format(self.selected_graphic.size))
+        self.sli_size.config(label="↕ Size: {}".format(self.selected_graphic.size))
         self.lab_bg_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
         self.lab_fill_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
         self.font_var.set(self.selected_graphic.font.split("/")[-1])
