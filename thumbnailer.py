@@ -142,12 +142,17 @@ class Application():
         #Colour picker buttons
         text_fill_icon = PhotoImage(file="misc/text.png")
         text_bg_icon = PhotoImage(file="misc/text_bg.png")
-        #Label(self.left_side, text="Colour:").grid(row=20, column=0)
+        #Fill colour
         self.but_fill_colour = Button(self.left_side, image=text_fill_icon, command=self.set_text_fill, width=24, height=24)
         self.but_fill_colour.grid(row=20, column=5, sticky="e",)
         self.but_fill_colour.icon = text_fill_icon
         self.lab_fill_indicator = Label(self.left_side, bg="#FFFFFF", width=3)
         self.lab_fill_indicator.grid(row=20, column=6, sticky="nsw")
+        #Swap colours
+        a = Button(self.left_side, text="⇆", command=self.swap_text_colours)
+        a.grid(row=20, column=7, sticky="ns")
+        a.config(font=("Courier", 10))
+        #Border colour
         self.but_border_colour = Button(self.left_side, image=text_bg_icon, command=self.set_text_border, width=24, height=24)
         self.but_border_colour.grid(row=20, column=8, sticky="e")
         self.but_border_colour.icon = text_bg_icon
@@ -224,6 +229,17 @@ class Application():
 
         self.root.mainloop()
 
+    def swap_text_colours(self):
+        """Swap text fill and background colours"""
+        self.text_fill, self.text_border = self.text_border, self.text_fill
+        if self.selected_graphic:
+            self.selected_graphic.f_colour = self.text_fill
+            self.selected_graphic.bg_colour = self.text_border
+
+        self.lab_fill_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.text_fill))
+        self.lab_bg_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.text_border))
+        self.update_image_preview()
+
     def increase_rotation(self):
         self.rotation_count = (self.rotation_count + 1) % 4
         self.update_image_preview()
@@ -239,6 +255,8 @@ class Application():
         self.lab_bg_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.bg_colour))
         self.lab_fill_indicator.config(bg="#{0:02x}{1:02x}{2:02x}".format(*self.selected_graphic.f_colour))
         self.font_var.set(self.selected_graphic.font.split("/")[-1])
+        self.text_fill = self.selected_graphic.f_colour
+        self.text_border = self.selected_graphic.bg_colour
         #Delete any graphics that contain no text:
         self.graphics = [g for g in self.graphics if g.text.strip()]
         self.ent_text.focus()
