@@ -10,11 +10,7 @@ from easygui import fileopenbox, ynbox, msgbox
 from tkinter import * 
 from tkinter.colorchooser import *
 import tkinter.font
-
-"""
-TODO:
-    - 
-"""
+from tkinter import ttk
 
 class TextGraphic():
     def __init__(self, loc=None, text=None, size=None, font=None, f_colour=None, bg_colour=None):
@@ -97,10 +93,10 @@ class Application():
         self.root.title("Thumbnail Maker V1.6")
 
         self.window = Frame(self.root)
-        self.window.grid(padx=5, pady=5)
+        self.window.grid(padx=8, pady=8)
 
         self.left_side = Frame(self.window)
-        self.left_side.grid(row=0, column=0, padx=5)
+        self.left_side.grid(row=0, column=0, padx=5,sticky="ns")
         self.right_side = Frame(self.window)
         self.right_side.grid(row=0, column=5, padx=5)
 
@@ -108,7 +104,7 @@ class Application():
         #Select Image
         select_image_icon = PhotoImage(file="misc/picture.png")
         self.but_select_image = Button(self.left_side, text="Select Image", image=select_image_icon, compound="left", command=self.select_image)
-        self.but_select_image.grid(row=5, column=5, columnspan=20, pady=10, sticky="we")
+        self.but_select_image.grid(row=5, column=5, columnspan=20, pady=0, sticky="we")
         self.but_select_image.icon = select_image_icon
 
         #Rotate button
@@ -117,7 +113,7 @@ class Application():
         #Add new text
         add_text_icon = PhotoImage(file="misc/edit.png")
         self.but_add_text = Button(self.left_side, text="Add Text", image=add_text_icon, compound="left", command= lambda: self.add_new_text_element(self.midpoint))
-        self.but_add_text.grid(row=7, column=5, columnspan=20, pady=10, sticky="we")
+        self.but_add_text.grid(row=7, column=5, columnspan=20, sticky="we", pady=0)
         self.but_add_text.icon = add_text_icon
 
         #Change font
@@ -146,7 +142,7 @@ class Application():
         text_bg_icon = PhotoImage(file="misc/text_bg.png")
         #Label(self.left_side, text="Colour:").grid(row=20, column=0)
         self.but_fill_colour = Button(self.left_side, image=text_fill_icon, command=self.set_text_fill, width=24, height=24)
-        self.but_fill_colour.grid(row=20, column=5, sticky="e")
+        self.but_fill_colour.grid(row=20, column=5, sticky="e",)
         self.but_fill_colour.icon = text_fill_icon
         self.lab_fill_indicator = Label(self.left_side, bg="#FFFFFF", width=3)
         self.lab_fill_indicator.grid(row=20, column=6, sticky="nsw")
@@ -156,10 +152,14 @@ class Application():
         self.lab_bg_indicator = Label(self.left_side, bg="#000000", width=3)
         self.lab_bg_indicator.grid(row=20, column=9, sticky="nsw")
 
+        #Seperator
+        ttk.Separator(self.left_side).grid(row=22, column=5, columnspan=100, sticky="ew", pady=5)
+
         #Save image button
+        Label(self.left_side, height=5).grid(row=24, column=5) #Spacer
         save_icon = PhotoImage(file="misc/save.png")
         self.but_save_image = Button(self.left_side, text="Save", image=save_icon, compound="left", command= lambda: self.save_image())
-        self.but_save_image.grid(row=25, column=5, columnspan=20, pady=10, sticky="we")
+        self.but_save_image.grid(row=25, column=5, columnspan=20, pady=4, sticky="wes")
         self.but_save_image = save_icon
 
         #RIGHT SIDE
@@ -239,6 +239,7 @@ class Application():
         self.font_var.set(self.selected_graphic.font.split("/")[-1])
         #Delete any graphics that contain no text:
         self.graphics = [g for g in self.graphics if g.text.strip()]
+        self.ent_text.focus()
 
 
     def get_closest_graphic(self, mouse_event, tolerance=0):
@@ -273,8 +274,8 @@ class Application():
         quit()
 
     def set_text_fill(self):
-        c = askcolor(color="red", parent=None, title=("Set text fill"))
-        if c:
+        c = askcolor(parent=self.root, color="red", title=("Set text fill"))
+        if c != (None, None):
             rgb_colour = tuple([int(i) for i in c[0]])
             if self.selected_graphic: self.selected_graphic.f_colour = rgb_colour
             self.text_fill = rgb_colour
@@ -284,8 +285,8 @@ class Application():
             pass
         
     def set_text_border(self):
-        c = askcolor(color="red", parent=None, title=("Set text border"))
-        if c:
+        c = askcolor(parent=self.root, color="red", title=("Set text border"))
+        if c != (None, None):
             rgb_colour = tuple([int(i) for i in c[0]])
             if self.selected_graphic: self.selected_graphic.bg_colour = rgb_colour
             self.text_border = rgb_colour
