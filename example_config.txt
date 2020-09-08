@@ -4,8 +4,8 @@
     "text_fill": [255,255,255],
     "text_border": [1,1,1],
     "text_size": 20,
-    "output_folder": "/home/username/pictures/thumbnails/",
-    "input_folder": "/home/username/pictures/*.jpg",
-    "font_file": "/usr/share/fonts/Ubuntu-B.ttf",
-    "font_folder": "/usr/share/fonts/
+    "output_folder": "./thumbnails/",
+    "input_folder": "~/Pictures/*.jpg",
+    "font_file": "C:/Windows/Fonts/SansSerif.ttf",
+    "font_folder": "C:/Windows/Fonts/"
 }
